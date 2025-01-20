@@ -1,0 +1,91 @@
+#include<LiquidCrystal.h>
+#include<DHT.h>
+
+//Pins and object instantiation for the LCD 16x2 display
+int RS = 7;
+int E = 6;
+int D4 = 5;
+int D5 = 4;
+int D6 = 3;
+int D7 = 2;
+LiquidCrystal LCD1(RS , E , D4 , D5 , D6 , D7);
+
+
+
+//Pin and object instantiation for the DHT11 Sensor 
+int dhtPin = 8;
+#define dhtType DHT22
+DHT dht(dhtPin , dhtType);
+float temperature;
+float humidity;
+
+
+//Pin for the Soil Moisture Sensor
+int moisturePin = A0;
+int resistanceLevel;
+int moistureContent;
+
+
+
+//Pin for the Relay Module to turn the Water Pump ON or OFF based on the condition
+int relayPin = 10;
+
+//Buzzer
+int buzzerPin = 9;
+
+
+void setup() {
+  // put your setup code here, to run once:
+  LCD1.begin(16 , 2);
+  pinMode(moisturePin , INPUT);
+  pinMode(relayPin , OUTPUT);
+  pinMode(buzzerPin , OUTPUT);
+  digitalWrite(relayPin , HIGH);
+  Serial.begin(9600);
+  dht.begin();
+
+}
+
+void loop() {
+
+  // LCD1.setCursor(0 , 0);
+  // LCD1.print("Hello World !");
+
+  // put your main code here, to run repeatedly:
+  
+  temperature = dht.readTemperature();
+  humidity   = dht.readHumidity();
+
+  LCD1.setCursor(0 , 0);
+  LCD1.print("Temperature : ");
+  LCD1.print(temperature);
+  LCD1.setCursor(0 , 1);
+  LCD1.print("Humidity(%) : ");
+  LCD1.print(humidity);
+  delay(5000);
+  LCD1.clear();
+
+
+  resistanceLevel = analogRead(moisturePin);
+  moistureContent = -1*resistanceLevel + 1023;
+  LCD1.setCursor(0 , 0);
+  LCD1.print("Moisture : ");
+  LCD1.print(moistureContent);
+  delay(5000);
+  LCD1.clear();
+
+  if(moistureContent < 500) {
+      LCD1.setCursor(0 , 0);
+      LCD1.print("Soil is Dry.");
+      LCD1.setCursor(0 , 1);
+      LCD1.print("Pump is turned ON.");
+      digitalWrite(relayPin , LOW);
+      delay(5000);
+      digitalWrite(relayPin ,HIGH);
+  }
+
+  
+  LCD1.clear();
+
+
+}
